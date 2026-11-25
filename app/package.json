@@ -1,0 +1,58 @@
+{
+  "name": "archivatore",
+  "productName": "Archivatore",
+  "version": "1.0.0",
+  "description": "Fast multi-threaded Windows desktop archiver and folder encapsulator with commander explorer and parallel queue",
+  "main": "main.js",
+  "author": "VEROBOTS S.R.L.",
+  "license": "MIT",
+  "homepage": "https://olarian.com/free-projects/archivatore",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aOlarian/archivatore.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/queue-test.js",
+    "test:ui": "electron .",
+    "dist": "node build-installer.js"
+  },
+  "devDependencies": {
+    "electron": "^42.1.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "eu.verobots.archivatore",
+    "productName": "Archivatore",
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Archivatore",
+      "perMachine": false,
+      "allowElevation": false,
+      "runAfterFinish": true,
+      "artifactName": "archivatore-install.exe"
+    },
+    "extraResources": [
+      {
+        "from": "bin/archivatore-engine.exe",
+        "to": "bin/archivatore-engine.exe"
+      }
+    ],
+    "files": [
+      "package.json",
+      "main.js",
+      "preload.js",
+      "enterprise.cjs",
+      "src/**/*",
+      "build/icon.png"
+    ],
+    "asar": true,
+    "directories": { "output": "dist", "buildResources": "build" }
+  }
+}
