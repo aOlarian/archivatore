@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <title>Archivatore</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/views.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="3"/>
+        <path d="M12 3v18M9 7h3M12 10h3M9 13h3M12 16h3"/>
+      </svg>
+      <span>ARCHIVATORE</span>
+    </div>
+
+    <div class="top-group">
+      <label for="sel-format">Format</label>
+      <select id="sel-format"></select>
+    </div>
+
+    <div class="top-group">
+      <label for="sel-level">Nivel</label>
+      <select id="sel-level"></select>
+    </div>
+
+    <div class="top-group">
+      <label for="sel-exec">Mod</label>
+      <select id="sel-exec">
+        <option value="auto">Auto (inteligent)</option>
+        <option value="parallel">Paralel (loturi)</option>
+        <option value="sequential">Secvențial (toate nucleele)</option>
+      </select>
+    </div>
+
+    <div class="top-group">
+      <label for="inp-jobs">Joburi</label>
+      <input id="inp-jobs" type="number" min="1" max="32" value="8">
+      <label for="inp-cores">Nuclee</label>
+      <input id="inp-cores" type="number" min="1" max="128" value="16">
+    </div>
+
+    <div class="spacer"></div>
+    <button id="btn-theme" class="band-btn" title="Schimbă tema">Temă: Sistem</button>
+    <button id="btn-settings" class="band-btn">Setări</button>
+  </header>
+
+  <section class="actbar" id="actbar">
+    <span class="act-dot" id="act-dot"></span>
+    <span id="act-status">Pregătit</span>
+    <span class="act-pill" id="pill-threads">0 nuclee active</span>
+    <span class="act-pill" id="pill-speed">0 MB/s</span>
+    <span class="act-pill" id="pill-counts">0 în coadă · 0 gata</span>
+    <div class="spacer"></div>
+    <button id="btn-pause" class="mini-btn">Pauză coadă</button>
+  </section>
+
+  <main class="workspace" id="workspace">
+    <section class="pane pane-left" id="pane-left">
+      <div class="drive-strip" id="drive-strip"></div>
+
+      <div class="bar">
+        <button id="btn-back" class="ghost mini-btn" title="Înapoi (Alt+Left)">Înapoi</button>
+        <button id="btn-fwd" class="ghost mini-btn" title="Înainte">Înainte</button>
+        <button id="btn-up" class="ghost mini-btn" title="Sus (Backspace)">Sus</button>
+        <button id="btn-refresh" class="ghost mini-btn" title="Reîmprospătează (F5)">Refresh</button>
+        <input id="inp-path" class="path-input" type="text" spellcheck="false" aria-label="Cale curentă">
+        <input id="inp-filter" class="filter-input" type="text" placeholder="Filtrează…" aria-label="Filtru">
+        <button id="btn-new-folder" class="ghost mini-btn">Folder nou</button>
+        <label class="mini-opts"><input id="chk-hidden" type="checkbox"> Ascunse</label>
+      </div>
+
+      <div class="action-bar">
+        <button id="btn-sel-folders" class="ghost mini-btn">Toate folderele</button>
+        <button id="btn-sel-archives" class="ghost mini-btn">Toate arhivele</button>
+        <button id="btn-sel-none" class="ghost mini-btn">Nimic</button>
+        <span class="sel-count" id="sel-count">0 selectate</span>
+
+        <button id="btn-compress-all" class="primary" disabled>Compress All</button>
+        <button id="btn-extract-all" disabled>Extract All</button>
+
+        <div class="spacer"></div>
+        <div class="mini-opts">
+          <label for="sel-extract-mode">Dezarhivare</label>
+          <select id="sel-extract-mode">
+            <option value="smart">Inteligent (pe loc)</option>
+            <option value="folder">Subfolder nou</option>
+            <option value="direct">Direct aici</option>
+          </select>
+        </div>
+        <div class="mini-opts">
+          <label for="sel-conflict">Conflict</label>
+          <select id="sel-conflict">
+            <option value="rename">Redenumește (-1)</option>
+            <option value="overwrite">Suprascrie</option>
+            <option value="skip">Sari peste</option>
+          </select>
+        </div>
+        <button id="btn-out-dir" class="ghost mini-btn" title="Alege alt folder de ieșire">Ieșire: Pe loc</button>
+      </div>
+
+      <div class="table-wrap" id="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="chk-col"><input id="chk-all" type="checkbox" aria-label="Selectează tot"></th>
+              <th data-sort="name">Nume</th>
+              <th data-sort="type">Tip</th>
+              <th class="num" data-sort="size">Mărime</th>
+              <th class="num" data-sort="mtimeMs">Modificat</th>
+            </tr>
+          </thead>
+          <tbody id="fs-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" tabindex="0"></div>
+
+    <section class="pane pane-right" id="pane-right">
+      <div class="bar bar-head">
+        <span class="pane-title">Coadă de lucru</span>
+        <div class="q-tabs" id="q-tabs">
+          <button class="q-tab active" data-qtab="all">Toate</button>
+          <button class="q-tab" data-qtab="running">Active</button>
+          <button class="q-tab" data-qtab="queued">În coadă</button>
+          <button class="q-tab" data-qtab="done">Gata</button>
+          <button class="q-tab" data-qtab="error">Erori</button>
+        </div>
+        <div class="spacer"></div>
+        <button id="btn-retry-all" class="ghost mini-btn">Reîncearcă</button>
+        <button id="btn-clear-done" class="ghost mini-btn">Curăță</button>
+      </div>
+      <div class="q-list" id="q-list"></div>
+    </section>
+  </main>
+
+  <dialog id="dlg-mkdir">
+    <div class="dlg-head"><span>Folder nou</span><button id="mkdir-close" class="band-btn mini-btn">✕</button></div>
+    <form id="mkdir-form" class="dlg-body">
+      <div class="field-row">
+        <label for="mkdir-name">Numele folderului</label>
+        <input id="mkdir-name" type="text" required autocomplete="off" placeholder="ex: Arhive_Drive">
+      </div>
+      <div id="mkdir-err" class="job-err" hidden></div>
+    </form>
+    <div class="dlg-foot">
+      <button id="mkdir-cancel" type="button" class="ghost">Anulează</button>
+      <button id="mkdir-ok" type="submit" form="mkdir-form" class="primary">Creează</button>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-settings">
+    <div class="dlg-head"><span>Setări &amp; Unelte detectate</span><button id="set-close" class="band-btn mini-btn">✕</button></div>
+    <div class="dlg-body">
+      <div class="field-row">
+        <label>Folder implicit de ieșire (gol = pe loc lângă sursă)</label>
+        <div style="display:flex; gap:6px;">
+          <input id="set-outdir" type="text" readonly style="flex:1" placeholder="Pe loc (lângă fiecare folder/arhivă)">
+          <button id="set-outdir-pick" type="button">Alege…</button>
+          <button id="set-outdir-clear" type="button" class="ghost">Pe loc</button>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Unelte disponibile pe sistem</label>
+        <div class="tool-grid" id="tool-grid"></div>
+      </div>
+      <div class="field-row">
+        <label>Scurtături tastatură</label>
+        <div class="muted" style="font-size:12px;">
+          Ctrl+A: selectează/debifează tot · Shift+Click: selecție interval · Enter: intră în folder · Backspace: folder părinte · F5: refresh
+        </div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button id="set-done" type="button" class="primary">Închide</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/explorer.js"></script>
+  <script src="js/queue-view.js"></script>
+  <script src="js/controls.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
