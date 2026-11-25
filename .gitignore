@@ -1,0 +1,7 @@
+app/node_modules/
+app/dist/
+app/bin/*.exe
+archivatore-install.exe
+app/test/smoke-*.png
+SHA256SUMS.txt
+*.tmp
